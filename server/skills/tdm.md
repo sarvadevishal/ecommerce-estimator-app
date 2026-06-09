@@ -461,22 +461,23 @@ available downstream.
 | 4 | Informatica Cloud job (ELTL from AS400) | MVP | 24 | 30% | Partial | AI scaffolds mappings/SQL; source config and testing manual. |
 | 5 | Informatica mapping tasks & taskflows | MVP | 16 | 40% | Partial | Create mapping task, add to taskflow, parameter setup. |
 | 6 | Schedule the job | MVP | 4 | 10% | Partial | Configure schedule, frequency, parameters, error handling. |
-| 7 | Add table to datashare (PROD2/PROD3/UAT) | MVP | 6 | 15% | Yes | Console/config; AI generates GRANT/ALTER statements. |
-| 8 | Create views in PROD2/PROD3/UAT | MVP | 8 | 50% | Yes (high) | View DDL near-identical across clusters; template once. |
-| 9 | Validate data across all clusters | MVP | 16 | 35% | Partial | AI generates reconciliation queries; investigation manual. |
-| 10 | Test end-to-end in UAT | MVP | 12 | 20% | No | Full load + incremental load testing, edge cases. |
-| 11 | Add table to audit (if needed) | Phase2 | 4 | 40% | Yes | Configure audit rules, thresholds, alerts. |
-| 12 | Documentation & handover | Phase2 | 6 | 60% | Yes | AI drafts data dictionary, runbook; human reviews. |
-| 13 | Coordination & status updates | MVP | 8 | 0% | No | Manager review, lead discussion, Jira updates, daily standup. |
-| 14 | Coordinate with downstream teams (FLP360, TBE, Titan) | MVP | 8 | 0% | No | Clarification, sign-off, validation feedback. |
+| 7 | Add table to datashare (PROD2/PROD3/UAT) | MVP | 6 | 25% | Yes | Console/config; AI generates GRANT/ALTER statements. Includes UAT datashare consolidation (previously separate task). |
+| 8 | Create views in PROD2/PROD3/UAT | MVP | 2 | 70% | Yes (high) | View DDL near-identical across clusters; AI templates all 3 with one schema. |
+| 9 | Validate data in PROD1 (source-to-target) | MVP | 4 | 45% | Partial | AI generates reconciliation queries; mismatch investigation manual. |
+| 10 | Validate data in UAT | MVP | 4 | 45% | Partial | AI generates reconciliation queries; investigation manual. |
+| 11 | Test end-to-end in UAT | MVP | 4 | 25% | No | Full load + incremental load testing, edge cases. |
+| 12 | Add table to audit (if needed) | Phase2 | 4 | 40% | Yes | Configure audit rules, thresholds, alerts. |
+| 13 | Documentation & handover | Phase2 | 6 | 60% | Yes | AI drafts data dictionary, runbook; human reviews. |
+| 14 | Coordination & status updates | MVP | 4 | 0% | No | Manager review, lead discussion, Jira updates, daily standup. |
+| 15 | Coordinate with downstream teams (FLP360, TBE, Titan) | MVP | 8 | 0% | No | Clarification, sign-off, validation feedback. |
 
-**Subtotal (MVP + Phase2):** ~130 hours (manual) → ~80–90 hours (with AI, ~30% saved).
+**Subtotal (MVP + Phase2):** ~114 hours (manual) → ~80 hours (with AI, ~30% saved).
 
 **Confidence:** High (if requirement is clear, sources are known).
 
 **Risk Buffer:** +20% for standard deployment.
 
-**Final estimate:** ~96–108 hours.
+**Final estimate:** ~96 hours.
 
 ---
 
@@ -492,20 +493,21 @@ and it must be validated everywhere.
 | 1 | Requirement & impact analysis | MVP | 4 | 20% | No | Understand column source, business rules, downstream impact. |
 | 2 | Alter / recreate table in PROD1 | MVP | 6 | 40% | Partial | AI drafts ALTER/recreate DDL; review + DISTKEY impact human. |
 | 3 | Update Informatica mapping | MVP | 8 | 30% | Partial | AI scaffolds mapping/SQL change; config + testing manual. |
-| 4 | Update views in PROD2/PROD3/UAT to expose column | MVP | 8 | 50% | Yes | Change across 3 clusters nearly identical; template once. |
-| 5 | Validate across clusters (source-to-target) | MVP | 12 | 35% | Partial | AI generates reconciliation queries; mismatch investigation manual. |
-| 6 | Test end-to-end in UAT | MVP | 8 | 20% | No | Full load, incremental load, edge case validation. |
-| 7 | Coordinate downstream validation (Looker, FLP360) | MVP | 4 | 0% | No | Report/application review, sign-off. |
-| 8 | Deploy to PROD | MVP | 4 | 10% | No | Deployment steps, backup, rollback plan. |
-| 9 | Post-deployment monitoring | MVP | 4 | 0% | No | Monitor job execution, query performance, alerts. |
+| 4 | Update views in PROD2/PROD3/UAT to expose column | MVP | 2 | 70% | Yes | Change across 3 clusters nearly identical; AI templates all 3. |
+| 5 | Validate in PROD1 (source-to-target) | MVP | 3 | 45% | Partial | AI generates reconciliation queries; mismatch investigation manual. |
+| 6 | Validate in UAT | MVP | 3 | 45% | Partial | AI generates reconciliation queries; investigation manual. |
+| 7 | Test end-to-end in UAT | MVP | 4 | 25% | No | Full load, incremental load, edge case validation. |
+| 8 | Coordinate downstream validation (Looker, FLP360) | MVP | 4 | 0% | No | Report/application review, sign-off. |
+| 9 | Deploy to PROD | MVP | 4 | 10% | No | Deployment steps, backup, rollback plan. |
+| 10 | Post-deployment monitoring | MVP | 4 | 0% | No | Monitor job execution, query performance, alerts. |
 
-**Subtotal (MVP):** ~58 hours (manual) → ~37–42 hours (with AI, ~30% saved).
+**Subtotal (MVP):** ~42 hours (manual) → ~30 hours (with AI, ~29% saved).
 
 **Confidence:** High (if source and target are known).
 
 **Risk Buffer:** +20% for standard deployment.
 
-**Final estimate:** ~44–50 hours.
+**Final estimate:** ~36 hours.
 
 ---
 
@@ -527,9 +529,9 @@ reporting and application validation.
 | Complexity | High (multiple clusters, full lifecycle) |
 | Confidence | High |
 | Risk Level | Medium |
-| Estimated Range | 100–130 hours |
-| Recommended Estimate | 115 hours |
-| Final Estimate with Buffer | 138 hours (115 + 20% buffer) |
+| Estimated Range | 88–114 hours |
+| Recommended Estimate | 96 hours |
+| Final Estimate with Buffer | 115 hours (96 + 20% buffer) |
 
 ### Phase-Wise Breakdown
 
@@ -543,19 +545,20 @@ reporting and application validation.
 | **6. Informatica Mapping Tasks & Taskflows** | Create mapping task for CUSTOMER_ORDERS. Create taskflow. Add parameters (e.g., load_date, batch_id). Set up task dependencies. Configure error handling and notifications. | 16 |
 | **7. Full Load & Incremental Logic** | Implement full load process (TRUNCATE + INSERT all rows). Implement incremental process (INSERT new rows, UPDATE changed rows, DELETE deleted rows). Test both paths. | 16 |
 | **8. Schedule & Automation** | Set up Informatica Cloud schedule (e.g., daily at 2 AM). Configure frequency, notification rules, retry logic. Document schedule in Jira. | 4 |
-| **9. Add Table to Datashare** | In Informatica or Redshift console, grant datashare access for CUSTOMER_ORDERS to PROD2, PROD3, UAT consumers. | 6 |
-| **10. Create Consumer Views** | Create view in PROD2 (for Looker): `SELECT * FROM shared_customer_orders_prod1.CUSTOMER_ORDERS`. Create view in PROD3 (for FLP360). Create view in UAT. Verify each view is queryable. | 8 |
-| **11. Data Validation** | Write reconciliation queries (source row count vs Redshift row count, duplicate check, null check, business rule validation). Run full load validation and incremental validation. Investigate any mismatches. | 16 |
+| **9. Add Table to Datashare** | In Informatica or Redshift console, grant datashare access for CUSTOMER_ORDERS to PROD2, PROD3, UAT consumers. Includes UAT datashare consolidation. | 6 |
+| **10. Create Consumer Views** | Create view in PROD2 (for Looker): `SELECT * FROM shared_customer_orders_prod1.CUSTOMER_ORDERS`. Create view in PROD3 (for FLP360). Create view in UAT. AI templates all 3 from single schema. | 2 |
+| **11. Data Validation — PROD1** | Write reconciliation queries (source row count vs Redshift row count, duplicate check, null check, business rule validation). Run full load and incremental validation. | 8 |
+| **11b. Data Validation — UAT** | Run UAT validation of reconciliation queries. Investigate any mismatches. | 8 |
 | **12. Performance Testing** | Run CUSTOMER_ORDERS query with various WHERE clauses. Review query plans. Confirm DISTKEY/SORTKEY choice is optimal. Check job execution time. Optimize if needed. | 8 |
-| **13. UAT Testing** | Deploy full setup to UAT. Run end-to-end test (full load, incremental load, view queries). Test error scenarios (source data unavailable, AS400 down, network timeout). Test rollback. | 12 |
+| **13. UAT Testing** | Deploy full setup to UAT. Run end-to-end test (full load, incremental load, view queries). Test error scenarios (source data unavailable, AS400 down, network timeout). Test rollback. | 4 |
 | **14. Looker / FLP360 Validation** | Coordinate with Looker team: verify view is queryable, reports can be built, performance acceptable. Coordinate with FLP360 team: verify table is available, application queries work, no missing columns. | 8 |
 | **15. Audit Configuration** | Add CUSTOMER_ORDERS to audit rules (if needed). Set up threshold alerts (e.g., warn if > 1M rows loaded). Configure audit logging. | 4 |
 | **16. Documentation** | Create data dictionary (columns, data types, business definitions). Write runbook (how to monitor job, troubleshoot, rerun). Document DISTKEY/SORTKEY rationale. Document disaster recovery steps. | 6 |
 | **17. Deployment to PROD** | Create deployment checklist. Back up PROD1 pre-deployment. Deploy table DDL to PROD. Deploy Informatica job to PROD. Add to datashare. Create views in PROD2/PROD3. Verify access. | 8 |
 | **18. Rollback Plan** | Document how to rollback (drop table, revert Informatica job, remove datashare). Test rollback in UAT. Keep backup of pre-deployment state. | 4 |
 | **19. Post-Deployment Monitoring** | Monitor first week of job execution (success rate, runtime, data quality). Watch Looker and FLP360 usage. Respond to issues. Verify no performance degradation in PROD1. | 8 |
-| **20. Coordination & Communication** | Daily Jira updates. Standup meetings. Manager/lead reviews. Clarification calls with downstream teams. | 8 |
-| | **TOTAL** | **176 hours** |
+| **21. Coordination & Communication** | Daily Jira updates. Standup meetings. Manager/lead reviews. Clarification calls with downstream teams. | 4 |
+| | **TOTAL** | **144 hours** |
 
 ### Technology Impact
 

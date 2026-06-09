@@ -3,7 +3,10 @@
     "allow": [
       "Bash(npm install *)",
       "Bash(npm run *)",
-      "Bash(node index.js)"
+      "Bash(node index.js)",
+      "Bash(start http://localhost:5173)",
+      "Bash(git add *)",
+      "Bash(git commit -m 'Update TDM skill file with optimized effort estimates *)"
     ]
   }
 }
