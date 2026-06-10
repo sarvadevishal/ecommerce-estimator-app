@@ -8,8 +8,8 @@
     }
   ],
   "env": {
-    "PROVIDER": "anthropic",
-    "MODEL": "claude-haiku-4-5-20251001"
+    "PROVIDER": "openai",
+    "MODEL": "gpt-5.4"
   },
   "envPrefix": "VERCEL_",
   "git": {
