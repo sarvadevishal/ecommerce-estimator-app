@@ -1,0 +1,20 @@
+{
+  "buildCommand": "npm install:all && npm run build",
+  "outputDirectory": "client/dist",
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "/api"
+    }
+  ],
+  "env": {
+    "PROVIDER": "anthropic",
+    "MODEL": "claude-haiku-4-5-20251001"
+  },
+  "envPrefix": "VERCEL_",
+  "git": {
+    "deploymentEnabled": {
+      "main": true
+    }
+  }
+}
