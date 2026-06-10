@@ -1,8 +1,5 @@
-// Vercel serverless function handler for Express app
 import dotenv from "dotenv";
 dotenv.config({ override: true });
-import express from "express";
-import cors from "cors";
 import { getEstimate as getAnthropicEstimate } from "../server/anthropic.js";
 import { getEstimate as getOpenAIEstimate } from "../server/openai.js";
 import { getMockEstimate } from "../server/mock.js";
@@ -12,10 +9,6 @@ import {
   addEstimate,
   removeEstimate,
 } from "../server/store.js";
-
-const app = express();
-app.use(cors());
-app.use(express.json({ limit: "64kb" }));
 
 const HAS_OPENAI = !!process.env.OPENAI_API_KEY;
 const HAS_ANTHROPIC = !!process.env.ANTHROPIC_API_KEY;
@@ -42,114 +35,145 @@ const PROVIDER_HAS_KEY =
 const USE_MOCK = process.env.USE_MOCK === "true" || !PROVIDER_HAS_KEY;
 const MODEL = process.env.MODEL || (PROVIDER === "openai" ? "gpt-4o-mini" : "claude-opus-4-7");
 
-app.get("/api/health", (req, res) => {
-  res.json({
-    ok: true,
-    mode: USE_MOCK ? "mock" : "live",
-    provider: PROVIDER || "none",
-    model: MODEL,
-  });
-});
+export default async function handler(req, res) {
+  // Enable CORS
+  res.setHeader("Access-Control-Allow-Credentials", "true");
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET,OPTIONS,PATCH,DELETE,POST,PUT");
+  res.setHeader(
+    "Access-Control-Allow-Headers",
+    "X-CSRF-Token, X-Forwarded-Host, Accept-Language, Content-Language, Content-Type"
+  );
 
-app.post("/api/estimate", async (req, res) => {
-  const { project, requirement } = req.body;
-
-  if (!project || !requirement) {
-    return res.status(400).json({
-      error: "Missing project or requirement.",
-    });
+  if (req.method === "OPTIONS") {
+    res.status(200).end();
+    return;
   }
 
-  if (project !== "tdm") {
-    return res.status(400).json({
-      project,
-      covered: false,
-      message: `Project "${project}" is not yet supported. Currently, only TDM is available.`,
+  const { pathname, search } = new URL(req.url, `http://${req.headers.host}`);
+
+  // Route: GET /api/health
+  if (pathname === "/api/health" && req.method === "GET") {
+    res.json({
+      ok: true,
+      mode: USE_MOCK ? "mock" : "live",
+      provider: PROVIDER || "none",
+      model: MODEL,
     });
+    return;
   }
 
-  try {
-    let estimate;
-    if (USE_MOCK) {
-      estimate = getMockEstimate(requirement);
-    } else if (PROVIDER === "anthropic") {
-      estimate = await getAnthropicEstimate(requirement, MODEL);
-    } else if (PROVIDER === "openai") {
-      estimate = await getOpenAIEstimate(requirement, MODEL);
-    } else {
-      return res.status(500).json({
-        error: "No valid provider configured.",
+  // Route: POST /api/estimate
+  if (pathname === "/api/estimate" && req.method === "POST") {
+    try {
+      const { project, requirement } = req.body || {};
+
+      if (!project || !requirement) {
+        return res.status(400).json({
+          error: "Missing project or requirement.",
+        });
+      }
+
+      if (project !== "tdm") {
+        return res.status(400).json({
+          project,
+          covered: false,
+          message: `Project "${project}" is not yet supported. Currently, only TDM is available.`,
+        });
+      }
+
+      let estimate;
+      if (USE_MOCK) {
+        estimate = getMockEstimate(requirement);
+      } else if (PROVIDER === "anthropic") {
+        estimate = await getAnthropicEstimate(requirement, MODEL);
+      } else if (PROVIDER === "openai") {
+        estimate = await getOpenAIEstimate(requirement, MODEL);
+      } else {
+        return res.status(500).json({
+          error: "No valid provider configured.",
+        });
+      }
+
+      res.json(estimate);
+    } catch (err) {
+      console.error("Error generating estimate:", err);
+      res.status(500).json({
+        error: err.message || "Could not generate estimate.",
       });
     }
-
-    return res.json(estimate);
-  } catch (err) {
-    console.error("Error generating estimate:", err);
-    return res.status(500).json({
-      error: err.message || "Could not generate estimate.",
-    });
-  }
-});
-
-app.get("/api/estimates", async (req, res) => {
-  try {
-    const estimates = await listEstimates();
-    res.json(estimates);
-  } catch (err) {
-    console.error("Error listing estimates:", err);
-    res.status(500).json({ error: "Could not list estimates." });
-  }
-});
-
-app.get("/api/estimates/:id", async (req, res) => {
-  const { id } = req.params;
-  try {
-    const estimate = await getStoredEstimate(id);
-    res.json(estimate);
-  } catch (err) {
-    console.error("Error getting estimate:", err);
-    res.status(404).json({ error: "Estimate not found." });
-  }
-});
-
-app.post("/api/estimates", async (req, res) => {
-  const { requirement, project, estimate, totals } = req.body;
-
-  if (!requirement || !project || !estimate || !totals) {
-    return res.status(400).json({
-      error: "Missing required fields.",
-    });
+    return;
   }
 
-  if (!estimate.covered) {
-    return res.status(400).json({
-      error: "Only covered estimates can be saved.",
-    });
+  // Route: GET /api/estimates
+  if (pathname === "/api/estimates" && req.method === "GET") {
+    try {
+      const estimates = await listEstimates();
+      res.json(estimates);
+    } catch (err) {
+      console.error("Error listing estimates:", err);
+      res.status(500).json({ error: "Could not list estimates." });
+    }
+    return;
   }
 
-  try {
-    const saved = await addEstimate({
-      project,
-      requirement,
-      estimate,
-      totals,
-    });
-    res.json(saved);
-  } catch (err) {
-    console.error("Error saving estimate:", err);
-    res.status(500).json({ error: "Could not save estimate." });
-  }
-});
+  // Route: POST /api/estimates
+  if (pathname === "/api/estimates" && req.method === "POST") {
+    try {
+      const { requirement, project, estimate, totals } = req.body || {};
 
-app.delete("/api/estimates/:id", async (req, res) => {
-  const { id } = req.params;
-  try {
-    await removeEstimate(id);
-    res.status(204).send();
-  } catch (err) {
-    console.error("Error deleting estimate:", err);
-    res.status(404).json({ error: "Estimate not found." });
-  }
-});
+      if (!requirement || !project || !estimate || !totals) {
+        return res.status(400).json({
+          error: "Missing required fields.",
+        });
+      }
 
-export default app;
+      if (!estimate.covered) {
+        return res.status(400).json({
+          error: "Only covered estimates can be saved.",
+        });
+      }
+
+      const saved = await addEstimate({
+        project,
+        requirement,
+        estimate,
+        totals,
+      });
+      res.json(saved);
+    } catch (err) {
+      console.error("Error saving estimate:", err);
+      res.status(500).json({ error: "Could not save estimate." });
+    }
+    return;
+  }
+
+  // Route: GET /api/estimates/:id
+  if (pathname.startsWith("/api/estimates/") && req.method === "GET") {
+    try {
+      const id = pathname.split("/").pop();
+      const estimate = await getStoredEstimate(id);
+      res.json(estimate);
+    } catch (err) {
+      console.error("Error getting estimate:", err);
+      res.status(404).json({ error: "Estimate not found." });
+    }
+    return;
+  }
+
+  // Route: DELETE /api/estimates/:id
+  if (pathname.startsWith("/api/estimates/") && req.method === "DELETE") {
+    try {
+      const id = pathname.split("/").pop();
+      await removeEstimate(id);
+      res.status(204).send();
+    } catch (err) {
+      console.error("Error deleting estimate:", err);
+      res.status(404).json({ error: "Estimate not found." });
+    }
+    return;
+  }
+
+  // 404
+  res.status(404).json({ error: "Not found" });
+}
