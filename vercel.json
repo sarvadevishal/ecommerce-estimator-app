@@ -1,5 +1,4 @@
 {
-  "name": "delivery-estimator",
   "buildCommand": "npm install:all && npm run build",
   "outputDirectory": "client/dist",
   "rewrites": [
@@ -11,11 +10,5 @@
   "env": {
     "PROVIDER": "openai",
     "MODEL": "gpt-5.4"
-  },
-  "envPrefix": "VERCEL_",
-  "git": {
-    "deploymentEnabled": {
-      "main": true
-    }
   }
 }
